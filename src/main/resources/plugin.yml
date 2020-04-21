@@ -1,0 +1,6 @@
+name: VoteManager
+version: @version@
+main: bonn2.votemanager.Main
+api-version: 1.13
+authors: [bonn2]
+description: Allows players to vote using buttons or signs

@@ -2,6 +2,7 @@ package bonn2.votemanager.inventories;
 
 import bonn2.votemanager.Main;
 import bonn2.votemanager.data.Election;
+import bonn2.votemanager.util.NBTEditor;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -22,7 +23,7 @@ public class EditElectionInventory {
     public EditElectionInventory(Election election) { // TODO: Make pretty
         this.election = election;
         title = ChatColor.DARK_GREEN + election.getName();
-        inventory = plugin.getServer().createInventory(null, 9, title);
+        inventory = plugin.getServer().createInventory(null, 27, title);
 
         ItemStack maxVotes = new ItemStack(Material.PURPLE_DYE);
         ItemMeta maxVotesMeta = maxVotes.getItemMeta();
@@ -31,6 +32,7 @@ public class EditElectionInventory {
         maxVotesLore.add("Default = 1");
         maxVotesMeta.setLore(maxVotesLore);
         maxVotes.setItemMeta(maxVotesMeta);
+        maxVotes = NBTEditor.set(maxVotes, "maxVotes", "VoteManager");
 
         ItemStack autoEnd = new ItemStack(Material.RED_DYE);
         ItemMeta autoEndMeta = autoEnd.getItemMeta();
@@ -39,15 +41,17 @@ public class EditElectionInventory {
         autoEndLore.add("Default = Disabled");
         autoEndMeta.setLore(autoEndLore);
         autoEnd.setItemMeta(autoEndMeta);
+        autoEnd = NBTEditor.set(autoEnd, "autoEnd", "VoteManager");
 
         ItemStack addButton = new ItemStack(Material.BLUE_DYE);
         ItemMeta addButtonMeta = addButton.getItemMeta();
         addButtonMeta.setDisplayName("Add Candidate Button");
         addButton.setItemMeta(addButtonMeta);
+        addButton = NBTEditor.set(autoEnd, "addButton", "VoteManager");
 
-        inventory.setItem(2, maxVotes);
-        inventory.setItem(4, autoEnd);
-        inventory.setItem(6, addButton);
+        inventory.setItem(11, maxVotes);
+        inventory.setItem(13, autoEnd);
+        inventory.setItem(15, addButton);
     }
 
     public void open(Player player) {

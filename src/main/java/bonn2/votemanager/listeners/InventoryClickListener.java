@@ -2,6 +2,7 @@ package bonn2.votemanager.listeners;
 
 import bonn2.votemanager.data.InputType;
 import bonn2.votemanager.Main;
+import bonn2.votemanager.util.NBTEditor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,18 +20,18 @@ public class InventoryClickListener implements Listener {
             InventoryView inventoryView = event.getView();
             ItemStack clickedItem = event.getCurrentItem();
             if (clickedItem != null) {
-                switch (clickedItem.getType()) {
-                    case PURPLE_DYE: {
+                switch (NBTEditor.getString(clickedItem, "VoteManager")) {
+                    case "maxVotes": {
                         clickedMaxVotes(player, inventoryView);
                         event.setCancelled(true);
                         return;
                     }
-                    case RED_DYE: {
+                    case "autoEnd": {
                         clickedAutoEnd(event);
                         event.setCancelled(true);
                         return;
                     }
-                    case BLUE_DYE: {
+                    case "addButton": {
                         clickedAddButton(player, inventoryView);
                         event.setCancelled(true);
                         return;

@@ -57,6 +57,13 @@ public class Election {
         yml.save(ymlFile);
     }
 
+    public void delete() {
+        Main.loadedElections.remove(name);
+        String ext = ".yml";
+        File ymlFile = new File(plugin.getDataFolder() + File.separator + "Elections" + File.separator + name + ext);
+        ymlFile.delete();
+    }
+
     public void addCandidateButton(String name, Location location) {
         if (!candidateButtons.containsKey(name)) {
             List<Location> locations = new ArrayList<>();

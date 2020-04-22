@@ -34,6 +34,7 @@ public class MainCommand implements CommandExecutor {
                         return true;
                     }
                     case "delete": {
+                        Main.loadedElections.get(args[1]).delete();
                         return true;
                     }
                     case "getvotes": {

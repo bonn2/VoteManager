@@ -26,5 +26,30 @@
       <option name="name" value="sonatype" />
       <option name="url" value="https://oss.sonatype.org/content/groups/public/" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="local" />
+      <option name="name" value="local" />
+      <option name="url" value="file:/$PROJECT_DIR$/USER_HOME/.m2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="MavenLocal" />
+      <option name="name" value="MavenLocal" />
+      <option name="url" value="file:/$MAVEN_REPOSITORY$/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="NBTEditor" />
+      <option name="name" value="NBTEditor" />
+      <option name="url" value="file:/$PROJECT_DIR$/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="NBTEditor" />
+      <option name="name" value="NBTEditor" />
+      <option name="url" value="https://github.com/BananaPuncher714/NBTEditor" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="nbteditor" />
+      <option name="name" value="nbteditor" />
+      <option name="url" value="https://maven.pkg.github.com/BananaPuncher714/NBTEditor" />
+    </remote-repository>
   </component>
 </project>

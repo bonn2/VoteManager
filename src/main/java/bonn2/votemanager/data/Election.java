@@ -33,12 +33,17 @@ public class Election {
             for (String key : yml.getConfigurationSection("CandidateButtons").getKeys(false)) {
                 candidateButtons.put(key, (List<Location>) yml.getList("CandidateButtons." + key));
             }
-        } catch (NullPointerException ignored) {}
+        }
+        catch (ClassCastException e) {
+            plugin.getLogger().info("Invalid button in election " + name);
+        }
+        catch (NullPointerException ignored) {}
         try {
             for (String key : yml.getConfigurationSection("Votes").getKeys(false)) {
                 votes.put(UUID.fromString(key), yml.getStringList("Votes." + key));
             }
-        } catch (NullPointerException ignored) {}
+        }
+        catch (NullPointerException ignored) {}
     }
 
     public void save() throws IOException {
@@ -72,7 +77,6 @@ public class Election {
     public void hitButtonAt(Location location, Player player) {
         for(String candidate : candidateButtons.keySet()) {
             List<Location> locations = candidateButtons.get(candidate);
-            System.out.println("ITSA ME");
             if (locations.contains(location)) {
                 addVote(player, candidate);
                 try {
@@ -84,21 +88,34 @@ public class Election {
         }
     }
 
+    public Map<String, Integer> getTotals() {
+        Map<String, Integer> totals = new HashMap<>();
+        for (String candidate : candidateButtons.keySet()) {
+            totals.put(candidate, 0);
+        }
+        for (UUID uuid : votes.keySet()) {
+            for (String vote : votes.get(uuid)) {
+                totals.put(vote, totals.getOrDefault(vote, 0) + 1);
+            }
+        }
+        return totals;
+    }
+
     private void addVote(Player voter, String vote) {
         if (!votes.containsKey(voter.getUniqueId())) {
-            System.out.println("DONT GOT KEY");
             List<String> list = new ArrayList<>();
             list.add(vote);
             votes.put(voter.getUniqueId(), list);
+            voter.sendMessage("You successfully voted for " + vote);
         }
         else if (votes.get(voter.getUniqueId()).size() < maxVotes && !votes.get(voter.getUniqueId()).contains(vote)) {
-            System.out.println("GOT KEY");
             List<String> list = votes.get(voter.getUniqueId());
             list.add(vote);
             votes.put(voter.getUniqueId(), list);
+            voter.sendMessage("You successfully voted for " + vote);
         }
         else {
-            System.out.println("WHY TF I HERE");
+            voter.sendMessage("You have already voted " + maxVotes + " time/s");
         }
     }
 }

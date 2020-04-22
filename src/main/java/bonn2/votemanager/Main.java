@@ -29,11 +29,8 @@ public final class Main extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
         plugin = this;
-        openEditors = new HashMap<>();
-        awaitingPlayers = new HashMap<>();
-        awaitingPlayersElection = new HashMap<>();
-        awaitingCandidateButtonSelection = new HashMap<>();
-        loadedElections = new HashMap<>();
+        initGlobalVars();
+
         getServer().getPluginManager().registerEvents(new AsyncChatListener(), this);
         getServer().getPluginManager().registerEvents(new InventoryClickListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerInteractListener(), this);
@@ -42,12 +39,19 @@ public final class Main extends JavaPlugin {
         Objects.requireNonNull(this.getCommand("votemanager")).setTabCompleter(new MainCommandTabComplete());
 
         loadElections();
-
     }
 
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+    }
+
+    public static void initGlobalVars() {
+        openEditors = new HashMap<>();
+        awaitingPlayers = new HashMap<>();
+        awaitingPlayersElection = new HashMap<>();
+        awaitingCandidateButtonSelection = new HashMap<>();
+        loadedElections = new HashMap<>();
     }
 
     public static void loadElections() {

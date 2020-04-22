@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
+import java.util.Map;
 
 public class MainCommand implements CommandExecutor {
     @Override
@@ -35,10 +36,19 @@ public class MainCommand implements CommandExecutor {
                     case "delete": {
                         return true;
                     }
+                    case "getvotes": {
+                        try {
+                            Election election = Main.loadedElections.get(args[1]);
+                            Map<String, Integer> totals = election.getTotals();
+                            for (String candidate : totals.keySet()) {
+                                sender.sendMessage(candidate + ": " + totals.get(candidate));
+                            }
+                        } catch (NullPointerException e) {
+                            sender.sendMessage("No election by the name " + args[1]);
+                        }
+                        return true;
+                    }
                 }
-            }
-            case 3: {
-
             }
             default: {
                 return false;

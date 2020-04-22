@@ -17,6 +17,7 @@ public class PlayerInteractListener implements Listener {
     @EventHandler
     public void onClick(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+        if (event.getClickedBlock() == null) { return; }
         if (Main.awaitingPlayers.containsKey(player.getUniqueId())) {
             if (Main.awaitingPlayers.get(player.getUniqueId()).equals(InputType.CANDIDATE_BUTTON)) {
                 Main.awaitingPlayers.remove(player.getUniqueId());
@@ -32,11 +33,9 @@ public class PlayerInteractListener implements Listener {
                 }
                 event.setCancelled(true);
             }
-        } else {
-            System.out.println("IM HERE");
+        } else if (event.getClickedBlock().getType().toString().contains("BUTTON")) {
             Location buttonLocation = event.getClickedBlock().getLocation();
             for (String electionName : Main.loadedElections.keySet()) {
-                System.out.println("TESTING: " + electionName);
                 Main.loadedElections.get(electionName).hitButtonAt(buttonLocation, player);
             }
         }

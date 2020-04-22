@@ -24,10 +24,12 @@ public class MainCommandTabComplete implements TabCompleter {
                 if ("create".startsWith(args[0].toLowerCase())) { output.add("create"); }
                 if ("edit".startsWith(args[0].toLowerCase())) { output.add("edit"); }
                 if ("delete".startsWith(args[0].toLowerCase())) { output.add("delete"); }
+                if ("getvotes".startsWith(args[0].toLowerCase())) { output.add("getvotes"); }
                 return output;
             }
             case 2: {
                 switch (args[0]) {
+                    case "getvotes":
                     case "edit":
                     case "delete": {
                         for (String electionName : Main.loadedElections.keySet()) {

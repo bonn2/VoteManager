@@ -1,5 +1,5 @@
 name: VoteManager
-version: @version@
+version: 1.0-SNAPSHOT
 main: bonn2.votemanager.Main
 api-version: 1.13
 authors: [bonn2]

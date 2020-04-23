@@ -19,7 +19,8 @@ public class PlayerInteractListener implements Listener {
         Player player = event.getPlayer();
         if (event.getClickedBlock() == null) { return; }
         if (Main.awaitingPlayers.containsKey(player.getUniqueId())) {
-            if (Main.awaitingPlayers.get(player.getUniqueId()).equals(InputType.CANDIDATE_BUTTON)) {
+            if (Main.awaitingPlayers.get(player.getUniqueId()).equals(InputType.CANDIDATE_BUTTON)
+                    && event.getClickedBlock().getType().toString().contains("BUTTON")) {
                 Main.awaitingPlayers.remove(player.getUniqueId());
                 Candidate candidate = Main.awaitingCandidateButtonSelection.get(player.getUniqueId());
                 Election election = candidate.getElection();
@@ -28,6 +29,7 @@ public class PlayerInteractListener implements Listener {
                 election.addCandidateButton(candidate.getName(), buttonLocation);
                 try {
                     election.save();
+                    player.sendMessage("Successfully set button for candidate " + candidate.getName());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

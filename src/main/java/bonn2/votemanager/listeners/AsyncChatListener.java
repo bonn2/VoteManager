@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import java.io.IOException;
+import java.text.ParseException;
 
 public class AsyncChatListener implements Listener {
 
@@ -23,6 +24,16 @@ public class AsyncChatListener implements Listener {
             Main.awaitingPlayersElection.remove(player.getUniqueId());
             switch (eventType) {
                 case AUTO_END: {
+                    try {
+                        Main.openEditors.remove(player.getUniqueId());
+                        election.setEndTime(event.getMessage());
+                        election.save();
+                        player.sendMessage("Set date to: " + election.getEndTime().toInstant().toString());
+                    } catch (ParseException e) {
+                        player.sendMessage("That is not a valid date format!");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     event.setCancelled(true);
                     return;
                 }

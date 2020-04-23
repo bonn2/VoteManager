@@ -27,7 +27,7 @@ public class InventoryClickListener implements Listener {
                         return;
                     }
                     case "autoEnd": {
-                        clickedAutoEnd(event);
+                        clickedAutoEnd(player, inventoryView);
                         event.setCancelled(true);
                         return;
                     }
@@ -37,6 +37,8 @@ public class InventoryClickListener implements Listener {
                         return;
                     }
                 }
+            } else {
+                event.setCancelled(true);
             }
         }
     }
@@ -57,7 +59,12 @@ public class InventoryClickListener implements Listener {
         inventoryView.close();
     }
 
-    private void clickedAutoEnd(InventoryClickEvent event) {
-
+    private void clickedAutoEnd(Player player, InventoryView inventoryView) {
+        player.setItemOnCursor(new ItemStack(Material.AIR));
+        player.sendMessage("Enter the date and time for the election to end");
+        player.sendMessage("in the format: dd-MM-yyyy HH:mm:ss");
+        Main.awaitingPlayers.put(player.getUniqueId(), InputType.AUTO_END);
+        Main.awaitingPlayersElection.put(player.getUniqueId(), Main.openEditors.get(player.getUniqueId()).getElection());
+        inventoryView.close();
     }
 }

@@ -25,7 +25,7 @@ public class EditElectionInventory {
         title = ChatColor.DARK_GREEN + election.getName();
         inventory = plugin.getServer().createInventory(null, 27, title);
 
-        ItemStack maxVotes = new ItemStack(Material.PURPLE_DYE);
+        ItemStack maxVotes = new ItemStack(Material.REPEATER);
         ItemMeta maxVotesMeta = maxVotes.getItemMeta();
         maxVotesMeta.setDisplayName("Max Votes: " + election.getMaxVotes());
         List<String> maxVotesLore = new ArrayList<>();
@@ -34,7 +34,7 @@ public class EditElectionInventory {
         maxVotes.setItemMeta(maxVotesMeta);
         maxVotes = NBTEditor.set(maxVotes, "maxVotes", "VoteManager");
 
-        ItemStack autoEnd = new ItemStack(Material.RED_DYE);
+        ItemStack autoEnd = new ItemStack(Material.CLOCK);
         ItemMeta autoEndMeta = autoEnd.getItemMeta();
         autoEndMeta.setDisplayName("Auto End Election: Disabled");
         List<String> autoEndLore = new ArrayList<>();
@@ -43,11 +43,11 @@ public class EditElectionInventory {
         autoEnd.setItemMeta(autoEndMeta);
         autoEnd = NBTEditor.set(autoEnd, "autoEnd", "VoteManager");
 
-        ItemStack addButton = new ItemStack(Material.BLUE_DYE);
+        ItemStack addButton = new ItemStack(Material.STONE_BUTTON);
         ItemMeta addButtonMeta = addButton.getItemMeta();
         addButtonMeta.setDisplayName("Add Candidate Button");
         addButton.setItemMeta(addButtonMeta);
-        addButton = NBTEditor.set(autoEnd, "addButton", "VoteManager");
+        addButton = NBTEditor.set(addButton, "addButton", "VoteManager");
 
         inventory.setItem(11, maxVotes);
         inventory.setItem(13, autoEnd);

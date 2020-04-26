@@ -6,6 +6,8 @@ import bonn2.votemanager.data.Candidate;
 import bonn2.votemanager.data.Election;
 import bonn2.votemanager.data.InputType;
 import bonn2.votemanager.inventories.EditElectionInventory;
+import bonn2.votemanager.inventories.SetEndTimeInventory;
+import bonn2.votemanager.inventories.SetStartTimeInventory;
 import bonn2.votemanager.listeners.AsyncChatListener;
 import bonn2.votemanager.listeners.InventoryClickListener;
 import bonn2.votemanager.listeners.InventoryCloseListener;
@@ -19,11 +21,14 @@ import java.util.*;
 public final class Main extends JavaPlugin {
 
     public static Main plugin;
-    public static Map<UUID, EditElectionInventory> openEditors;
+    public static Map<UUID, EditElectionInventory> openEditElectionInventories;
+    public static Map<UUID, SetStartTimeInventory> openEditStartTimeInventories;
+    public static Map<UUID, SetEndTimeInventory> openEditEndTimeInventories;
     public static Map<UUID, InputType> awaitingPlayers;
     public static Map<UUID, Election> awaitingPlayersElection;
     public static Map<UUID, Candidate> awaitingCandidateButtonSelection;
     public static Map<String, Election> loadedElections;
+    public static Map<UUID, Integer> changingInventories;
 
     @Override
     public void onEnable() {
@@ -47,11 +52,14 @@ public final class Main extends JavaPlugin {
     }
 
     public static void initGlobalVars() {
-        openEditors = new HashMap<>();
+        openEditElectionInventories = new HashMap<>();
+        openEditStartTimeInventories = new HashMap<>();
+        openEditEndTimeInventories = new HashMap<>();
         awaitingPlayers = new HashMap<>();
         awaitingPlayersElection = new HashMap<>();
         awaitingCandidateButtonSelection = new HashMap<>();
         loadedElections = new HashMap<>();
+        changingInventories = new HashMap<>();
     }
 
     public static void loadElections() {

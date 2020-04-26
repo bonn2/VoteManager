@@ -23,34 +23,6 @@ public class AsyncChatListener implements Listener {
             Main.awaitingPlayers.remove(player.getUniqueId());
             Main.awaitingPlayersElection.remove(player.getUniqueId());
             switch (eventType) {
-                case AUTO_END: {
-                    try {
-                        Main.openEditors.remove(player.getUniqueId());
-                        election.setEndTime(event.getMessage());
-                        election.save();
-                        player.sendMessage("Set date to: " + election.getEndTime().toInstant().toString());
-                    } catch (ParseException e) {
-                        player.sendMessage("That is not a valid date format!");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    event.setCancelled(true);
-                    return;
-                }
-                case MAX_VOTES: {
-                    try {
-                        Main.openEditors.remove(player.getUniqueId());
-                        election.setMaxVotes(Integer.parseInt(event.getMessage()));
-                        election.save();
-                        player.sendMessage("Set max votes to: " + Integer.parseInt(event.getMessage()));
-                    } catch (NumberFormatException e) {
-                        player.sendMessage("Max votes must be a whole number!");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    event.setCancelled(true);
-                    return;
-                }
                 case CANDIDATE_NAME: {
                     Main.awaitingPlayers.put(player.getUniqueId(), InputType.CANDIDATE_BUTTON);
                     Main.awaitingCandidateButtonSelection.put(player.getUniqueId(),

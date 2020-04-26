@@ -1,6 +1,7 @@
 package bonn2.votemanager.listeners;
 
 import bonn2.votemanager.Main;
+import bonn2.votemanager.inventories.EditElectionInventory;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,9 +12,14 @@ public class InventoryCloseListener implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         Player player = (Player) event.getPlayer();
-        if (Main.openEditors.containsKey(player.getUniqueId())) {
-            System.out.println("Removing player from edit session!");
-            Main.openEditors.remove(player.getUniqueId());
+        if (Main.openEditElectionInventories.containsKey(player.getUniqueId())) {
+            Main.openEditElectionInventories.remove(player.getUniqueId());
+        }
+        if (Main.openEditStartTimeInventories.containsKey(player.getUniqueId())) {
+            //EditElectionInventory editElectionInventory = new EditElectionInventory(Main.openEditStartTimeInventories.get(player.getUniqueId()).getElection());
+            Main.openEditStartTimeInventories.remove(player.getUniqueId());
+            //Main.changingInventories.put(player.getUniqueId(), 0);
+            //editElectionInventory.open(player);
         }
     }
 }

@@ -3,13 +3,14 @@ package bonn2.votemanager.commands;
 import bonn2.votemanager.Main;
 import bonn2.votemanager.data.Election;
 import bonn2.votemanager.inventories.EditElectionInventory;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 
 public class MainCommand implements CommandExecutor {
     @Override
@@ -35,14 +36,15 @@ public class MainCommand implements CommandExecutor {
                     }
                     case "delete": {
                         Main.loadedElections.get(args[1]).delete();
+                        sender.sendMessage("Successfully deleted " + args[1]);
                         return true;
                     }
                     case "getvotes": {
                         try {
                             Election election = Main.loadedElections.get(args[1]);
-                            Map<String, Integer> totals = election.getTotals();
-                            for (String candidate : totals.keySet()) {
-                                sender.sendMessage(candidate + ": " + totals.get(candidate));
+                            List<String> messages = election.getTotals();
+                            for (String message : messages) {
+                                sender.sendMessage(colorize(message));
                             }
                         } catch (NullPointerException e) {
                             sender.sendMessage("No election by the name " + args[1]);
@@ -55,5 +57,9 @@ public class MainCommand implements CommandExecutor {
                 return false;
             }
         }
+    }
+
+    public String colorize(String msg) {
+        return ChatColor.translateAlternateColorCodes('&', msg);
     }
 }

@@ -1,6 +1,7 @@
 package bonn2.votemanager.data;
 
 import bonn2.votemanager.Main;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -17,6 +18,7 @@ public class Election {
     private int maxVotes;
     private String name;
     private Map<String, List<Location>> candidateButtons;
+    private List<Location> resultsButtons;
     private Date startTime;
     private boolean useStartTime;
     private Date endTime;
@@ -26,6 +28,7 @@ public class Election {
     public Election(String name) {
         votes = new HashMap<>();
         candidateButtons = new HashMap<>();
+        resultsButtons = new ArrayList<>();
         maxVotes = 1;
         this.name = name;
         useStartTime = false;
@@ -38,6 +41,7 @@ public class Election {
         System.out.println("Loading maxvotes as " + maxVotes);
         votes = new HashMap<>();
         candidateButtons = new HashMap<>();
+        resultsButtons = new ArrayList<>();
         useStartTime = yml.getBoolean("UseStartTime");
         useEndTime = yml.getBoolean("UseEndTime");
         if (useStartTime) { startTime = (Date) yml.get("StartTime"); }
@@ -48,7 +52,7 @@ public class Election {
             }
         }
         catch (ClassCastException e) {
-            plugin.getLogger().info("Invalid button in election " + name);
+            plugin.getLogger().warning("Invalid button in election " + name);
         }
         catch (NullPointerException ignored) {}
         try {
@@ -57,6 +61,13 @@ public class Election {
             }
         }
         catch (NullPointerException ignored) {}
+        if (yml.get("ResultsButtons") != null) {
+            try {
+                resultsButtons = (List<Location>) yml.get("ResultsButtons");
+            } catch (ClassCastException e) {
+                plugin.getLogger().warning("Invalid view button in election " + name);
+            }
+        }
     }
 
     public void save() throws IOException {
@@ -69,6 +80,7 @@ public class Election {
         yml.set("UseEndTime", useEndTime);
         if (useStartTime) { yml.set("StartTime", startTime); }
         if (useEndTime) { yml.set("EndTime", endTime); }
+        yml.set("ResultsButtons", resultsButtons);
         for (String name : candidateButtons.keySet()) { yml.set("CandidateButtons." + name, candidateButtons.get(name)); }
         for (UUID uuid : votes.keySet()) { yml.set("Votes." + uuid.toString(), votes.get(uuid)); }
         yml.save(ymlFile);
@@ -93,7 +105,13 @@ public class Election {
         }
     }
 
-    public void setMaxVotes(int max) { maxVotes = max; }
+    public void addResultsButton(Location location) {
+        if (!resultsButtons.contains(location)) {
+            resultsButtons.add(location);
+        }
+    }
+
+    public void incrementMaxVotes(int num) { maxVotes += num; }
     public int getMaxVotes() { return maxVotes; }
 
     public String getName() { return name; }
@@ -110,19 +128,36 @@ public class Election {
                 }
             }
         }
+        if (resultsButtons.contains(location)) {
+            List<String> messages = getTotals();
+            for (String message : messages) {
+                player.sendMessage(colorize(message));
+            }
+        }
     }
 
-    public Map<String, Integer> getTotals() {
+    public List<String> getTotals() {
         Map<String, Integer> totals = new HashMap<>();
+        List<String> output = new ArrayList<>();
+        int totalVotes = 0;
+        int totalVoters = 0;
+        output.add("&2Votes");
         for (String candidate : candidateButtons.keySet()) {
             totals.put(candidate, 0);
         }
         for (UUID uuid : votes.keySet()) {
+            totalVoters++;
             for (String vote : votes.get(uuid)) {
                 totals.put(vote, totals.getOrDefault(vote, 0) + 1);
+                totalVotes++;
             }
         }
-        return totals;
+        for (String candidate : totals.keySet()) {
+            output.add("&e" + candidate + ": " + totals.get(candidate));
+        }
+        output.add("&2Total Votes: &r" + totalVotes);
+        output.add("&2Total Voters: &r" + totalVoters);
+        return output;
     }
 
     private void addVote(Player voter, String vote) {
@@ -142,26 +177,59 @@ public class Election {
             votes.put(voter.getUniqueId(), list);
             voter.sendMessage("You successfully voted for " + vote);
         }
+        else if (votes.get(voter.getUniqueId()).contains(vote)) {
+            voter.sendMessage("You have already voted for " + vote);
+        }
         else {
             voter.sendMessage("You have already voted " + maxVotes + " time/s");
         }
     }
 
-    public void setStartTime(String time) throws ParseException {
+    public void setStartTime(Date time) {
         useStartTime = true;
-        startTime = timeFormat.parse(time);
+        startTime = time;
     }
     public Date getStartTime() { return startTime; }
     public void removeStartTime() { useStartTime = false; }
+    public boolean usingStartTime() { return useStartTime; }
 
-    public void setEndTime(String time) throws ParseException {
+    public void setEndTime(Date time) {
         useEndTime = true;
-        endTime = timeFormat.parse(time);
+        endTime = time;
     }
     public Date getEndTime() { return endTime; }
     public void removeEndTime() { useEndTime = false; }
+    public boolean usingEndTime() { return useEndTime; }
 
-    public boolean isActive() {  //TODO: Fix time system!!!!
+    public void incrementStartTime(int seconds) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(startTime);
+        cal.add(Calendar.SECOND, seconds);
+        startTime = cal.getTime();
+    }
+
+    public void incrementStartTimeYear(int years) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(startTime);
+        cal.add(Calendar.YEAR, years);
+        startTime = cal.getTime();
+    }
+
+    public void incrementEndTime(int seconds) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(endTime);
+        cal.add(Calendar.SECOND, seconds);
+        endTime = cal.getTime();
+    }
+
+    public void incrementEndTimeYear(int years) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(endTime);
+        cal.add(Calendar.YEAR, years);
+        endTime = cal.getTime();
+    }
+
+    public boolean isActive() {
         if (useStartTime && useEndTime) {
             if (startTime.before(new Date()) && endTime.after(new Date())) {
                 return true;
@@ -183,5 +251,9 @@ public class Election {
         } else {
             return true;
         }
+    }
+
+    public String colorize(String msg) {
+        return ChatColor.translateAlternateColorCodes('&', msg);
     }
 }

@@ -49,7 +49,6 @@ public class Election {
     public Election(YamlConfiguration yml, String name) {
         this.name = name;
         maxVotes = yml.getInt("MaxVotes");
-        System.out.println("Loading maxvotes as " + maxVotes);
         votes = new HashMap<>();
         candidateButtons = new HashMap<>();
         resultsButtons = new ArrayList<>();
@@ -152,7 +151,13 @@ public class Election {
         resultsButtons.remove(location);
     }
 
-    public void incrementMaxVotes(int num) { maxVotes += num; }
+    public void incrementMaxVotes(int num) {
+        if (maxVotes + num < 1) {
+            maxVotes = 1;
+            return;
+        }
+        maxVotes += num;
+    }
     public int getMaxVotes() { return maxVotes; }
 
     public String getName() { return name; }

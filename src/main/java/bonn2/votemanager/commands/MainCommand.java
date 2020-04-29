@@ -15,6 +15,10 @@ import java.util.List;
 public class MainCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+
+        String successfullyDeleted = "Successfully deleted %election%";
+        String noElection = "No election by the name %election%";
+
         switch (args.length) {
             case 1: {
                 return false;
@@ -36,7 +40,7 @@ public class MainCommand implements CommandExecutor {
                     }
                     case "delete": {
                         Main.loadedElections.get(args[1]).delete();
-                        sender.sendMessage("Successfully deleted " + args[1]);
+                        sender.sendMessage(successfullyDeleted.replaceAll("%election%", args[1]));
                         return true;
                     }
                     case "getvotes": {
@@ -47,7 +51,7 @@ public class MainCommand implements CommandExecutor {
                                 sender.sendMessage(colorize(message));
                             }
                         } catch (NullPointerException e) {
-                            sender.sendMessage("No election by the name " + args[1]);
+                            sender.sendMessage(noElection.replaceAll("%election%", args[1]));
                         }
                         return true;
                     }

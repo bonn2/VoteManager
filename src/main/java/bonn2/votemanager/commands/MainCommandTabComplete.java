@@ -1,7 +1,6 @@
 package bonn2.votemanager.commands;
 
 import bonn2.votemanager.Main;
-import bonn2.votemanager.data.Election;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;

@@ -16,6 +16,8 @@ public class AsyncChatListener implements Listener {
 
     @EventHandler
     public void playerChatEvent(AsyncPlayerChatEvent event) {
+        String clickButton = "Click the button that you want to be associated with the candidate.";
+
         Player player = event.getPlayer();
         if (Main.awaitingPlayers.containsKey(player.getUniqueId())) {
             Election election = Main.awaitingPlayersElection.get(player.getUniqueId());
@@ -27,7 +29,7 @@ public class AsyncChatListener implements Listener {
                     Main.awaitingPlayers.put(player.getUniqueId(), InputType.CANDIDATE_BUTTON);
                     Main.awaitingCandidateButtonSelection.put(player.getUniqueId(),
                             new Candidate(event.getMessage(), election));
-                    player.sendMessage("Click the button that you want to be associated with the candidate.");
+                    player.sendMessage(clickButton);
                     event.setCancelled(true);
                 }
             }

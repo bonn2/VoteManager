@@ -24,8 +24,8 @@ public class InventoryClickListener implements Listener {
 
         String enterCandidateName = "Enter the name of the candidate.";
         String clickViewResults = "Click the button that you want to be a view results button.";
-        String removedCandidateButton = "Removed candidate %c's button.";
-        String removedResultsButton = "Removed results button at %c.";
+        String removedCandidateButton = "Removed candidate %candidate%'s button.";
+        String removedResultsButton = "Removed results button at %location%.";
 
         Player player = (Player) event.getWhoClicked();
         InventoryView inventoryView = event.getView();
@@ -36,7 +36,7 @@ public class InventoryClickListener implements Listener {
                     case "maxVotes": {
                         EditElectionInventory editElectionInventory = Main.openEditElectionInventories.get(player.getUniqueId());
                         if (event.isShiftClick()) {
-                            if (event.getClick().isLeftClick() && editElectionInventory.getElection().getMaxVotes() - 10 > 0) {
+                            if (event.getClick().isLeftClick()) {
                                 editElectionInventory.incrementMaxVotes(-10);
                             } else if (event.getClick().isRightClick()) {
                                 editElectionInventory.incrementMaxVotes(10);
@@ -406,7 +406,7 @@ public class InventoryClickListener implements Listener {
                 removeVoteButtonInventory.remove(ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName()), buttonLocation);
                 removeVoteButtonInventory.saveElection();
                 removeVoteButtonInventory.loadItems();
-                player.sendMessage(removedCandidateButton.replaceAll("%c", ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName())));
+                player.sendMessage(removedCandidateButton.replaceAll("%candidate%", ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName())));
             }
             event.setCancelled(true);
         } else if (Main.openRemoveResultsButtonInventories.containsKey(player.getUniqueId())) {
@@ -420,7 +420,7 @@ public class InventoryClickListener implements Listener {
                 removeResultsButtonInventory.remove(buttonLocation);
                 removeResultsButtonInventory.saveElection();
                 removeResultsButtonInventory.loadItems();
-                player.sendMessage(removedResultsButton.replaceAll("%c", ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName())));
+                player.sendMessage(removedResultsButton.replaceAll("%location%", ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName())));
             }
             event.setCancelled(true);
         }

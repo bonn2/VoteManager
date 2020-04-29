@@ -1,13 +1,12 @@
 package bonn2.votemanager.listeners;
 
-import bonn2.votemanager.data.Election;
 import bonn2.votemanager.data.InputType;
 import bonn2.votemanager.Main;
-import bonn2.votemanager.inventories.EditElectionInventory;
-import bonn2.votemanager.inventories.SetEndTimeInventory;
-import bonn2.votemanager.inventories.SetStartTimeInventory;
+import bonn2.votemanager.inventories.*;
 import bonn2.votemanager.util.NBTEditor;
-import org.bukkit.Material;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -22,6 +21,12 @@ public class InventoryClickListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
+
+        String enterCandidateName = "Enter the name of the candidate.";
+        String clickViewResults = "Click the button that you want to be a view results button.";
+        String removedCandidateButton = "Removed candidate %c's button.";
+        String removedResultsButton = "Removed results button at %c.";
+
         Player player = (Player) event.getWhoClicked();
         InventoryView inventoryView = event.getView();
         ItemStack clickedItem = event.getCurrentItem();
@@ -84,30 +89,62 @@ public class InventoryClickListener implements Listener {
                         return;
                     }
                     case "candidateButton": {
+                        // TODO: Replace with add candidate menu, with ability to manage buttons from there. Aka rewrite all this ;(
+                        Main.awaitingPlayersElection.put(player.getUniqueId(), Main.openEditElectionInventories.get(player.getUniqueId()).getElection());
                         if (event.getClick().isLeftClick()) {
-                            player.sendMessage("Enter the name of the candidate.");
+                            player.sendMessage(enterCandidateName);
                             Main.awaitingPlayers.put(player.getUniqueId(), InputType.CANDIDATE_NAME);
                             Main.awaitingPlayersElection.put(player.getUniqueId(), Main.openEditElectionInventories.get(player.getUniqueId()).getElection());
                             inventoryView.close();
                         } else if (event.getClick().isRightClick()) {
-                            // TODO: Remove button function
+                            Main.awaitingPlayersElection.put(player.getUniqueId(), Main.openEditElectionInventories.get(player.getUniqueId()).getElection());
+                            RemoveVoteButtonInventory newInventory = new RemoveVoteButtonInventory(Main.awaitingPlayersElection.get(player.getUniqueId()));
+                            inventoryView.close();
+                            newInventory.open(player);
                         }
                         event.setCancelled(true);
                         return;
                     }
                     case "viewButton": {
                         if (event.getClick().isLeftClick()) {
-                            player.sendMessage("Click the button that you want to be a view results button.");
+                            player.sendMessage(clickViewResults);
                             Main.awaitingPlayers.put(player.getUniqueId(), InputType.VIEW_BUTTON);
                             Main.awaitingPlayersElection.put(player.getUniqueId(), Main.openEditElectionInventories.get(player.getUniqueId()).getElection());
                             inventoryView.close();
                         } else if (event.getClick().isRightClick()) {
-                            // TODO: Remove button function
+                            Main.awaitingPlayersElection.put(player.getUniqueId(), Main.openEditElectionInventories.get(player.getUniqueId()).getElection());
+                            RemoveResultsButtonInventory newInventory = new RemoveResultsButtonInventory(Main.awaitingPlayersElection.get(player.getUniqueId()));
+                            inventoryView.close();
+                            newInventory.open(player);
                         }
                         event.setCancelled(true);
                         return;
                     }
-                    default: {} // TODO: Print error to console
+                    case "forceOpen": {
+                        Main.openEditElectionInventories.get(player.getUniqueId()).toggleForceOpen();
+                        try {
+                            Main.openEditElectionInventories.get(player.getUniqueId()).getElection().save();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Main.openEditElectionInventories.get(player.getUniqueId()).loadItems();
+                        event.setCancelled(true);
+                        return;
+                    }
+                    case "forceClose": {
+                        Main.openEditElectionInventories.get(player.getUniqueId()).toggleForceClose();
+                        try {
+                            Main.openEditElectionInventories.get(player.getUniqueId()).getElection().save();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Main.openEditElectionInventories.get(player.getUniqueId()).loadItems();
+                        event.setCancelled(true);
+                        return;
+                    }
+                    default: {
+                        event.setCancelled(true);
+                    }
                 }
             } else {
                 event.setCancelled(true);
@@ -358,7 +395,34 @@ public class InventoryClickListener implements Listener {
                     }
                 }
             }
+        } else if (Main.openRemoveVoteButtonInventories.containsKey(player.getUniqueId())) {
+            if (clickedItem != null) {
+                RemoveVoteButtonInventory removeVoteButtonInventory = Main.openRemoveVoteButtonInventories.get(player.getUniqueId());
+                String[] parts = NBTEditor.getString(clickedItem, "VoteManager").split("/");
+                Location buttonLocation = new Location(Bukkit.getServer().getWorld(parts[3]),
+                        Integer.parseInt(parts[0]),
+                        Integer.parseInt(parts[1]),
+                        Integer.parseInt(parts[2]));
+                removeVoteButtonInventory.remove(ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName()), buttonLocation);
+                removeVoteButtonInventory.saveElection();
+                removeVoteButtonInventory.loadItems();
+                player.sendMessage(removedCandidateButton.replaceAll("%c", ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName())));
+            }
+            event.setCancelled(true);
+        } else if (Main.openRemoveResultsButtonInventories.containsKey(player.getUniqueId())) {
+            if (clickedItem != null) {
+                RemoveResultsButtonInventory removeResultsButtonInventory = Main.openRemoveResultsButtonInventories.get(player.getUniqueId());
+                String[] parts = NBTEditor.getString(clickedItem, "VoteManager").split("/");
+                Location buttonLocation = new Location(Bukkit.getServer().getWorld(parts[3]),
+                        Integer.parseInt(parts[0]),
+                        Integer.parseInt(parts[1]),
+                        Integer.parseInt(parts[2]));
+                removeResultsButtonInventory.remove(buttonLocation);
+                removeResultsButtonInventory.saveElection();
+                removeResultsButtonInventory.loadItems();
+                player.sendMessage(removedResultsButton.replaceAll("%c", ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName())));
+            }
+            event.setCancelled(true);
         }
     }
-
 }

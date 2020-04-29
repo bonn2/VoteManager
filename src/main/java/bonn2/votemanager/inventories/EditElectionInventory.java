@@ -82,11 +82,39 @@ public class EditElectionInventory {
         addViewButton.setItemMeta(addViewButtonMeta);
         addViewButton = NBTEditor.set(addViewButton, "viewButton", "VoteManager");
 
+        ItemStack toggleForceOpen = new ItemStack(Material.GREEN_DYE);
+        ItemMeta toggleForceOpenMeta = toggleForceOpen.getItemMeta();
+        if (election.isForceOpened()) {
+            toggleForceOpenMeta.setDisplayName(colorize("&9Force Open Voting: &aEnabled"));
+        } else {
+            toggleForceOpenMeta.setDisplayName(colorize("&9Force Open Voting: &cDisabled"));
+        }
+        List<String> toggleForceOpenLore = new ArrayList<>();
+        toggleForceOpenLore.add(colorize("&bClick to toggle force open"));
+        toggleForceOpenMeta.setLore(toggleForceOpenLore);
+        toggleForceOpen.setItemMeta(toggleForceOpenMeta);
+        toggleForceOpen = NBTEditor.set(toggleForceOpen, "forceOpen", "VoteManager");
+
+        ItemStack toggleForceClose = new ItemStack(Material.RED_DYE);
+        ItemMeta toggleForceCloseMeta = toggleForceClose.getItemMeta();
+        if (election.isForceClosed()) {
+            toggleForceCloseMeta.setDisplayName(colorize("&9Force Close Voting: &aEnabled"));
+        } else {
+            toggleForceCloseMeta.setDisplayName(colorize("&9Force Close Voting: &cDisabled"));
+        }
+        List<String> toggleForceCloseLore = new ArrayList<>();
+        toggleForceCloseLore.add(colorize("&bClick to toggle force close"));
+        toggleForceCloseMeta.setLore(toggleForceCloseLore);
+        toggleForceClose.setItemMeta(toggleForceCloseMeta);
+        toggleForceClose = NBTEditor.set(toggleForceClose, "forceClose", "VoteManager");
+
         inventory.setItem(0, maxVotes);
-        inventory.setItem(2, autoStart);
-        inventory.setItem(3, autoEnd);
-        inventory.setItem(5, addButton);
-        inventory.setItem(6, addViewButton);
+        inventory.setItem(1, autoStart);
+        inventory.setItem(2, autoEnd);
+        inventory.setItem(3, addButton);
+        inventory.setItem(4, addViewButton);
+        inventory.setItem(5, toggleForceOpen);
+        inventory.setItem(6, toggleForceClose);
     }
 
     public void open(Player player) {
@@ -104,6 +132,22 @@ public class EditElectionInventory {
             election.save();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void toggleForceOpen() {
+        if (election.isForceOpened()) {
+            election.disableForceOpenClose();
+        } else {
+            election.forceOpen();
+        }
+    }
+
+    public void toggleForceClose() {
+        if (election.isForceClosed()) {
+            election.disableForceOpenClose();
+        } else {
+            election.forceClose();
         }
     }
 

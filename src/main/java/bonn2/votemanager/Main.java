@@ -5,9 +5,7 @@ import bonn2.votemanager.commands.MainCommandTabComplete;
 import bonn2.votemanager.data.Candidate;
 import bonn2.votemanager.data.Election;
 import bonn2.votemanager.data.InputType;
-import bonn2.votemanager.inventories.EditElectionInventory;
-import bonn2.votemanager.inventories.SetEndTimeInventory;
-import bonn2.votemanager.inventories.SetStartTimeInventory;
+import bonn2.votemanager.inventories.*;
 import bonn2.votemanager.listeners.AsyncChatListener;
 import bonn2.votemanager.listeners.InventoryClickListener;
 import bonn2.votemanager.listeners.InventoryCloseListener;
@@ -24,6 +22,8 @@ public final class Main extends JavaPlugin {
     public static Map<UUID, EditElectionInventory> openEditElectionInventories;
     public static Map<UUID, SetStartTimeInventory> openEditStartTimeInventories;
     public static Map<UUID, SetEndTimeInventory> openEditEndTimeInventories;
+    public static Map<UUID, RemoveVoteButtonInventory> openRemoveVoteButtonInventories;
+    public static Map<UUID, RemoveResultsButtonInventory> openRemoveResultsButtonInventories;
     public static Map<UUID, InputType> awaitingPlayers;
     public static Map<UUID, Election> awaitingPlayersElection;
     public static Map<UUID, Candidate> awaitingCandidateButtonSelection;
@@ -55,6 +55,8 @@ public final class Main extends JavaPlugin {
         openEditElectionInventories = new HashMap<>();
         openEditStartTimeInventories = new HashMap<>();
         openEditEndTimeInventories = new HashMap<>();
+        openRemoveVoteButtonInventories = new HashMap<>();
+        openRemoveResultsButtonInventories = new HashMap<>();
         awaitingPlayers = new HashMap<>();
         awaitingPlayersElection = new HashMap<>();
         awaitingCandidateButtonSelection = new HashMap<>();
@@ -66,7 +68,7 @@ public final class Main extends JavaPlugin {
         File folder = new File(plugin.getDataFolder() + File.separator + "Elections" + File.separator);
         File[] listOfFiles = folder.listFiles();
 
-        loadedElections = new HashMap<>(); // Empties loadedVotes
+        loadedElections = new HashMap<>(); // Empties loadedElections
 
         if (listOfFiles == null) { return; }
 

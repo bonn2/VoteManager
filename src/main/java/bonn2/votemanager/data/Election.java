@@ -8,22 +8,31 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Election {
     Main plugin = Main.plugin;
-    private Map<UUID, List<String>> votes;
+    private final Map<UUID, List<String>> votes;
     private int maxVotes;
-    private String name;
-    private Map<String, List<Location>> candidateButtons;
+    private final String name;
+    private final Map<String, List<Location>> candidateButtons;
     private List<Location> resultsButtons;
     private Date startTime;
     private boolean useStartTime;
     private Date endTime;
     private boolean useEndTime;
-    private SimpleDateFormat timeFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+    private boolean forceOpen;
+    private boolean forceClose;
+
+    private String invalidVoteButton = "Invalid button in election %election%";
+    private String invalidViewButton = "Invalid view button in election %election%";
+    private String outputHeader = "&2Votes:";
+    private String totalVotesDescriptor = "&2Total Votes: &r%num%";
+    private String totalVotersDescriptor = "&2Total Voters: &r%num%";
+    private String electionNotActive = "Election is not currently active";
+    private String successfullyVoted = "You successfully voted for %candidate%";
+    private String alreadyVoted = "&eYou have already voted for ";
+    private String tooManyVotes = "You have already voted %num% time/s";
 
     public Election(String name) {
         votes = new HashMap<>();
@@ -33,6 +42,8 @@ public class Election {
         this.name = name;
         useStartTime = false;
         useEndTime = false;
+        forceOpen = false;
+        forceClose = false;
     }
 
     public Election(YamlConfiguration yml, String name) {
@@ -44,6 +55,9 @@ public class Election {
         resultsButtons = new ArrayList<>();
         useStartTime = yml.getBoolean("UseStartTime");
         useEndTime = yml.getBoolean("UseEndTime");
+        forceOpen = yml.getBoolean("ForceOpen");
+        forceClose = yml.getBoolean("ForceClose");
+        if (forceOpen && forceClose) { disableForceOpenClose(); }
         if (useStartTime) { startTime = (Date) yml.get("StartTime"); }
         if (useEndTime) { endTime = (Date) yml.get("EndTime"); }
         try {
@@ -52,7 +66,7 @@ public class Election {
             }
         }
         catch (ClassCastException e) {
-            plugin.getLogger().warning("Invalid button in election " + name);
+            plugin.getLogger().warning(invalidVoteButton.replaceAll("%election%", name));
         }
         catch (NullPointerException ignored) {}
         try {
@@ -65,7 +79,7 @@ public class Election {
             try {
                 resultsButtons = (List<Location>) yml.get("ResultsButtons");
             } catch (ClassCastException e) {
-                plugin.getLogger().warning("Invalid view button in election " + name);
+                plugin.getLogger().warning(invalidViewButton.replaceAll("%election%", name));
             }
         }
     }
@@ -78,6 +92,8 @@ public class Election {
         yml.set("MaxVotes", maxVotes);
         yml.set("UseStartTime", useStartTime);
         yml.set("UseEndTime", useEndTime);
+        yml.set("ForceOpen", forceOpen);
+        yml.set("ForceClose", forceClose);
         if (useStartTime) { yml.set("StartTime", startTime); }
         if (useEndTime) { yml.set("EndTime", endTime); }
         yml.set("ResultsButtons", resultsButtons);
@@ -89,26 +105,51 @@ public class Election {
     public void delete() {
         Main.loadedElections.remove(name);
         String ext = ".yml";
-        File ymlFile = new File(plugin.getDataFolder() + File.separator + "Elections" + File.separator + name + ext);
-        ymlFile.delete();
+        new File(plugin.getDataFolder() + File.separator + "Elections" + File.separator + name + ext).delete();
     }
 
     public void addCandidateButton(String name, Location location) {
+        List<Location> locations;
         if (!candidateButtons.containsKey(name)) {
-            List<Location> locations = new ArrayList<>();
-            locations.add(location);
-            candidateButtons.put(name, locations);
+            locations = new ArrayList<>();
         } else {
-            List<Location> locations = candidateButtons.get(name);
-            locations.add(location);
-            candidateButtons.put(name, locations);
+            locations = candidateButtons.get(name);
         }
+        locations.add(location);
+        candidateButtons.put(name, locations);
+    }
+
+    public Map<String, List<Location>> getCandidateButtons() {
+        return candidateButtons;
+    }
+
+    public List<Location> getResultsButtons() {
+        return resultsButtons;
+    }
+
+    public int numCandidateButtons() {
+        int total = 0;
+        for (String key : candidateButtons.keySet()) {
+            for (Location location : candidateButtons.get(key)) {
+                total++;
+            }
+        }
+        return total;
+    }
+
+    public void removeCandidateButton(String candidate, Location location) {
+        List<Location> locations = candidateButtons.get(candidate);
+        locations.remove(location);
     }
 
     public void addResultsButton(Location location) {
         if (!resultsButtons.contains(location)) {
             resultsButtons.add(location);
         }
+    }
+
+    public void removeResultsButton(Location location) {
+        resultsButtons.remove(location);
     }
 
     public void incrementMaxVotes(int num) { maxVotes += num; }
@@ -141,7 +182,7 @@ public class Election {
         List<String> output = new ArrayList<>();
         int totalVotes = 0;
         int totalVoters = 0;
-        output.add("&2Votes");
+        output.add(outputHeader);
         for (String candidate : candidateButtons.keySet()) {
             totals.put(candidate, 0);
         }
@@ -155,33 +196,37 @@ public class Election {
         for (String candidate : totals.keySet()) {
             output.add("&e" + candidate + ": " + totals.get(candidate));
         }
-        output.add("&2Total Votes: &r" + totalVotes);
-        output.add("&2Total Voters: &r" + totalVoters);
+        output.add(colorize(totalVotesDescriptor.replaceAll("%num%", totalVoters + "")));
+        output.add(colorize(totalVotersDescriptor.replaceAll("%num%", totalVoters + "")));
         return output;
     }
 
     private void addVote(Player voter, String vote) {
         if (!isActive()) {
-            voter.sendMessage("Election is not currently active");
+            voter.sendMessage(electionNotActive);
             return;
         }
         if (!votes.containsKey(voter.getUniqueId())) {
             List<String> list = new ArrayList<>();
             list.add(vote);
             votes.put(voter.getUniqueId(), list);
-            voter.sendMessage("You successfully voted for " + vote);
+            voter.sendMessage(colorize(successfullyVoted.replaceAll("%candidate%", vote)));
         }
         else if (votes.get(voter.getUniqueId()).size() < maxVotes && !votes.get(voter.getUniqueId()).contains(vote)) {
             List<String> list = votes.get(voter.getUniqueId());
             list.add(vote);
             votes.put(voter.getUniqueId(), list);
-            voter.sendMessage("You successfully voted for " + vote);
+            voter.sendMessage(colorize(successfullyVoted.replaceAll("%candidate%", vote)));
         }
         else if (votes.get(voter.getUniqueId()).contains(vote)) {
-            voter.sendMessage("You have already voted for " + vote);
+            String message = colorize(alreadyVoted);
+            for (String string : votes.get(voter.getUniqueId())) {
+                message = message + string + " ";
+            }
+            voter.sendMessage(message);
         }
         else {
-            voter.sendMessage("You have already voted " + maxVotes + " time/s");
+            voter.sendMessage(colorize(tooManyVotes.replaceAll("%num%", maxVotes + "")));
         }
     }
 
@@ -230,27 +275,43 @@ public class Election {
     }
 
     public boolean isActive() {
+        if (forceClose) {
+            return false;
+        } else if (forceOpen) {
+            return true;
+        }
         if (useStartTime && useEndTime) {
-            if (startTime.before(new Date()) && endTime.after(new Date())) {
-                return true;
-            } else {
-                return false;
-            }
+            return startTime.before(new Date()) && endTime.after(new Date());
         } else if (useStartTime) {
-            if (startTime.before(new Date())) {
-                return true;
-            } else {
-                return false;
-            }
+            return startTime.before(new Date());
         } else if (useEndTime) {
-            if (endTime.after(new Date())) {
-                return true;
-            } else {
-                return false;
-            }
+            return endTime.after(new Date());
         } else {
             return true;
         }
+    }
+
+    public void forceOpen() {
+        forceClose = false;
+        forceOpen = true;
+    }
+
+    public boolean isForceOpened() {
+        return forceOpen;
+    }
+
+    public void forceClose() {
+        forceOpen = false;
+        forceClose = true;
+    }
+
+    public boolean isForceClosed() {
+        return forceClose;
+    }
+
+    public void disableForceOpenClose() {
+        forceOpen = false;
+        forceClose = false;
     }
 
     public String colorize(String msg) {
